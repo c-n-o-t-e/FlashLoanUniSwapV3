@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.13;
 
-import "../lib/PoolAddress.sol";
-
 interface IFlashLoan {
     struct FlashParams {
+        uint24 fee;
         address token0;
         address token1;
-        uint24 fee1;
         uint256 amount0;
         uint256 amount1;
+        address pool;
         address dex;
     }
 
@@ -17,7 +16,9 @@ interface IFlashLoan {
         uint256 amount0;
         uint256 amount1;
         address payer;
-        PoolAddress.PoolKey poolKey;
+        address token0;
+        address token1;
+        address pool;
         address dex;
     }
 

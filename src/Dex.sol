@@ -21,16 +21,14 @@ contract Dex {
     }
 
     function swap(address from, address to, uint amount) public {
+        address token = token1;
+        address token0 = token2;
         require(
-            (from == token1 && to == token2) ||
-                (from == token2 && to == token1),
-            "Invalid tokens"
-        );
-        require(
-            ERC20(from).balanceOf(msg.sender) >= amount,
-            "Not enough to swap"
+            (from == token && to == token0) || (from == token0 && to == token),
+            "IT"
         );
 
+        require(ERC20(from).balanceOf(msg.sender) >= amount, "NS");
         uint swapAmount = getSwapPrice(from, to, amount);
 
         SafeTransferLib.safeTransferFrom(
@@ -40,7 +38,6 @@ contract Dex {
             amount
         );
 
-        SafeTransferLib.safeApprove(ERC20(to), address(this), swapAmount);
         SafeTransferLib.safeTransfer(ERC20(to), msg.sender, swapAmount);
     }
 
@@ -51,12 +48,5 @@ contract Dex {
     ) public view returns (uint) {
         return ((amount * ERC20(to).balanceOf(address(this))) /
             ERC20(from).balanceOf(address(this)));
-    }
-
-    function balanceOf(
-        address token,
-        address account
-    ) public view returns (uint) {
-        return ERC20(token).balanceOf(account);
     }
 }

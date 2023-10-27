@@ -73,21 +73,27 @@ contract FlashLoanTest is Test {
             1
         );
 
-        console.log(ERC20(DAI).balanceOf(address(this)), "1OO");
+        console.log(
+            "Contract DAI balance before Flash Loan:",
+            ERC20(DAI).balanceOf(address(this))
+        );
 
         params[0] = IFlashLoan.FlashParams({
+            fee: 3000,
             token0: DAI,
             token1: WETH9,
-            fee1: 3000,
             amount0: 10 ether,
             amount1: 0,
+            pool: 0xC2e9F25Be6257c210d7Adf0D4Cd6E3E881ba25f8,
             dex: address(dex)
         });
 
         flashLoan.initFlash(params);
 
-        console.log(ERC20(DAI).balanceOf(address(this)), "OO");
-        // console.log(dex.balanceOf(WETH9, address(dex)));
+        console.log(
+            "Contract DAI balance After Flash Loan:",
+            ERC20(DAI).balanceOf(address(this))
+        );
     }
 
     function test_Increment2() public {
@@ -95,44 +101,63 @@ contract FlashLoanTest is Test {
             3
         );
 
-        console.log(ERC20(DAI).balanceOf(address(this)), "DAI0");
-        console.log(ERC20(PEPE).balanceOf(address(this)), "PEPE0");
-        console.log(ERC20(WETH9).balanceOf(address(this)), "WETH0");
+        console.log(
+            "Contract DAI balance before Flash Loan:",
+            ERC20(DAI).balanceOf(address(this))
+        );
+        console.log(
+            "Contract PEPE balance before Flash Loan:",
+            ERC20(PEPE).balanceOf(address(this))
+        );
+        console.log(
+            "Contract WETH balance before Flash Loan:",
+            ERC20(WETH9).balanceOf(address(this))
+        );
 
         params[0] = IFlashLoan.FlashParams({
+            fee: 3000,
             token0: DAI,
             token1: WETH9,
-            fee1: 3000,
             amount0: 10 ether,
             amount1: 0,
+            pool: 0xC2e9F25Be6257c210d7Adf0D4Cd6E3E881ba25f8,
             dex: address(dex)
         });
 
         params[1] = IFlashLoan.FlashParams({
+            fee: 3000,
             token0: DAI,
             token1: WETH9,
-            fee1: 3000,
             amount0: 0,
             amount1: 10 ether,
+            pool: 0xC2e9F25Be6257c210d7Adf0D4Cd6E3E881ba25f8,
             dex: address(dex1)
         });
 
         params[2] = IFlashLoan.FlashParams({
+            fee: 3000,
             token0: PEPE,
             token1: WETH9,
-            fee1: 3000,
             amount0: 10 ether,
             amount1: 0,
+            pool: 0x11950d141EcB863F01007AdD7D1A342041227b58,
             dex: address(dex2)
         });
 
         flashLoan.initFlash(params);
-        console.log(ERC20(DAI).balanceOf(address(this)), "DAI");
-        console.log(ERC20(PEPE).balanceOf(address(this)), "PEPE");
-        console.log(ERC20(WETH9).balanceOf(address(this)), "WETH");
 
-        // console.log(dex.balanceOf(DAI, address(dex)));
-        // console.log(dex.balanceOf(WETH9, address(dex)));
+        console.log(
+            "Contract DAI balance after Flash Loan:",
+            ERC20(DAI).balanceOf(address(this))
+        );
+        console.log(
+            "Contract PEPE balance after Flash Loan:",
+            ERC20(PEPE).balanceOf(address(this))
+        );
+        console.log(
+            "Contract WETH balance after Flash Loan:",
+            ERC20(WETH9).balanceOf(address(this))
+        );
     }
 
     function approveToken(address contractAddr, address token) internal {
