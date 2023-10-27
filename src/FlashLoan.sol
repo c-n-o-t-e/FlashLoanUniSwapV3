@@ -82,9 +82,7 @@ contract FlashLoan is IUniswapV3FlashCallback, IFlashLoan {
         }
     }
 
-    /// @param params The parameters necessary for flash and the callback, passed in as FlashParams
-    /// @notice Calls the pools flash function with data needed in `uniswapV3FlashCallback`
-    /// @dev Handles multiply flash loan depending on the length of params
+    /// @inheritdoc IFlashLoan
     function initFlash(FlashParams[] memory params) public {
         for (uint256 i; i < params.length; ++i) {
             PoolAddress.PoolKey memory poolKey = PoolAddress.PoolKey({
