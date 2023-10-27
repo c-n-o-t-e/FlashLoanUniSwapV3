@@ -10,6 +10,7 @@ interface IFlashLoan {
         uint24 fee1;
         uint256 amount0;
         uint256 amount1;
+        address dex;
     }
 
     struct FlashCallbackData {
@@ -17,7 +18,8 @@ interface IFlashLoan {
         uint256 amount1;
         address payer;
         PoolAddress.PoolKey poolKey;
+        address dex;
     }
 
-    function initFlash(FlashParams memory params) external;
+    function initFlash(FlashParams[] memory params) external;
 }

