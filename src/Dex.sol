@@ -41,6 +41,28 @@ contract Dex {
         SafeTransferLib.safeTransfer(ERC20(to), msg.sender, swapAmount);
     }
 
+    /*
+        User bal of token A = 10
+        Contract bal of Token A = 100
+        Contract bal of Token B = 100
+
+        User calls swap(Token A, Token B, 10);
+
+        10 * 100 / 100
+        User get 10 of Token B
+        Contract bal of Token A = 110
+        Contract bal of Token B = 90
+
+        User calls swap(Token B, Token A, 10);
+
+        10 * 110 / 90 
+        User get 12.2 of Token B
+        Contract bal of Token A = 97.78
+        Contract bal of Token B = 100
+
+        User can drain pool by futher swaps
+
+    */
     function getSwapPrice(
         address from,
         address to,
