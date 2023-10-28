@@ -72,9 +72,9 @@ contract FlashLoanTest is Test {
         IFlashLoan.FlashParams[] memory params = getParams();
         message(bytes32("Before FlashLoan"));
 
-        flashLoan.initFlash(params[0]);
-        flashLoan.initFlash(params[1]);
-        flashLoan.initFlash(params[2]);
+        flashLoan.initFlash{value: 0}(params[0]);
+        flashLoan.initFlash{value: 0}(params[1]);
+        flashLoan.initFlash{value: 0}(params[2]);
 
         message(bytes32("After FlashLoan"));
     }
@@ -83,7 +83,7 @@ contract FlashLoanTest is Test {
         IFlashLoan.FlashParams[] memory params = getParams();
         message(bytes32("Before FlashLoan"));
 
-        flashLoan.multipleFlash(params);
+        flashLoan.multipleFlash{value: 0}(params);
         message(bytes32("After FlashLoan"));
     }
 
