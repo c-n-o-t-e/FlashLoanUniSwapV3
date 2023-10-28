@@ -23,6 +23,9 @@ contract FlashLoanTest is Test {
     address constant UNISWAP = 0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984;
     address constant PEPE = 0x6982508145454Ce325dDbE47a25d4ec3d2311933;
 
+    address constant DAI_WETH = 0xC2e9F25Be6257c210d7Adf0D4Cd6E3E881ba25f8;
+    address constant PEPE_WETH = 0x11950d141EcB863F01007AdD7D1A342041227b58;
+
     address constant DAI_HOLDER = 0x60FaAe176336dAb62e284Fe19B885B095d29fB7F;
     address constant PEPE_HOLDER = 0xf3B0073E3a7F747C7A38B36B805247B222C302A3;
     address constant WETH_HOLDER = 0x2fEb1512183545f48f6b9C5b4EbfCaF49CfCa6F3;
@@ -72,9 +75,9 @@ contract FlashLoanTest is Test {
         IFlashLoan.FlashParams[] memory params = getParams();
         message(bytes32("Before FlashLoan"));
 
-        flashLoan.initFlash{value: 0}(params[0]);
-        flashLoan.initFlash{value: 0}(params[1]);
-        flashLoan.initFlash{value: 0}(params[2]);
+        flashLoan.sFlash{value: 0}(params[0]);
+        flashLoan.sFlash{value: 0}(params[1]);
+        flashLoan.sFlash{value: 0}(params[2]);
 
         message(bytes32("After FlashLoan"));
     }
@@ -83,7 +86,7 @@ contract FlashLoanTest is Test {
         IFlashLoan.FlashParams[] memory params = getParams();
         message(bytes32("Before FlashLoan"));
 
-        flashLoan.multipleFlash{value: 0}(params);
+        flashLoan.mFlash{value: 0}(params);
         message(bytes32("After FlashLoan"));
     }
 
@@ -106,7 +109,7 @@ contract FlashLoanTest is Test {
             token1: WETH9,
             amount0: 10 ether,
             amount1: 0,
-            pool: 0xC2e9F25Be6257c210d7Adf0D4Cd6E3E881ba25f8,
+            pool: DAI_WETH,
             dex: address(dex)
         });
 
@@ -116,7 +119,7 @@ contract FlashLoanTest is Test {
             token1: WETH9,
             amount0: 0,
             amount1: 10 ether,
-            pool: 0xC2e9F25Be6257c210d7Adf0D4Cd6E3E881ba25f8,
+            pool: DAI_WETH,
             dex: address(dex1)
         });
 
@@ -126,7 +129,7 @@ contract FlashLoanTest is Test {
             token1: WETH9,
             amount0: 10 ether,
             amount1: 0,
-            pool: 0x11950d141EcB863F01007AdD7D1A342041227b58,
+            pool: PEPE_WETH,
             dex: address(dex2)
         });
 
