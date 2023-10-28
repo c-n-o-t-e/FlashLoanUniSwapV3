@@ -83,8 +83,7 @@ contract FlashLoan is IUniswapV3FlashCallback, IFlashLoan {
         }
     }
 
-    /// @inheritdoc IFlashLoan
-    function initFlash(FlashParams[] calldata params) external override {
+    function multipleFlash(FlashParams[] calldata params) external {
         for (uint256 i; i < params.length; ) {
             IUniswapV3Pool(params[i].pool).flash(
                 address(this),
@@ -106,5 +105,25 @@ contract FlashLoan is IUniswapV3FlashCallback, IFlashLoan {
                 ++i;
             }
         }
+    }
+
+    /// @inheritdoc IFlashLoan
+    function initFlash(FlashParams calldata params) external {
+        IUniswapV3Pool(params.pool).flash(
+            address(this),
+            params.amount0,
+            params.amount1,
+            abi.encode(
+                FlashCallbackData({
+                    amount0: params.amount0,
+                    amount1: params.amount1,
+                    payer: msg.sender,
+                    token0: params.token0,
+                    token1: params.token1,
+                    pool: params.pool,
+                    dex: params.dex
+                })
+            )
+        );
     }
 }

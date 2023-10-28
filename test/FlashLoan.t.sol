@@ -69,49 +69,36 @@ contract FlashLoanTest is Test {
     }
 
     function testSingleFlashLoan() public {
-        IFlashLoan.FlashParams[] memory params = new IFlashLoan.FlashParams[](
-            1
-        );
+        IFlashLoan.FlashParams[] memory params = getParams();
+        message(bytes32("Before"));
 
-        console.log(
-            "Contract DAI balance before Flash Loan:",
-            ERC20(DAI).balanceOf(address(this))
-        );
+        flashLoan.initFlash(params[0]);
+        flashLoan.initFlash(params[1]);
+        flashLoan.initFlash(params[2]);
 
-        params[0] = IFlashLoan.FlashParams({
-            fee: 3000,
-            token0: DAI,
-            token1: WETH9,
-            amount0: 10 ether,
-            amount1: 0,
-            pool: 0xC2e9F25Be6257c210d7Adf0D4Cd6E3E881ba25f8,
-            dex: address(dex)
-        });
-
-        flashLoan.initFlash(params);
-
-        console.log(
-            "Contract DAI balance After Flash Loan:",
-            ERC20(DAI).balanceOf(address(this))
-        );
+        message(bytes32("After"));
     }
 
     function testMultipleFlashLoan() public {
+        IFlashLoan.FlashParams[] memory params = getParams();
+        message(bytes32("Before FlashLoan"));
+
+        flashLoan.multipleFlash(params);
+
+        message(bytes32("After FlashLoan"));
+    }
+
+    function approveToken(address contractAddr, address token) private {
+        ERC20(contractAddr).approve(token, 100 ether);
+    }
+
+    function getParams()
+        private
+        view
+        returns (IFlashLoan.FlashParams[] memory)
+    {
         IFlashLoan.FlashParams[] memory params = new IFlashLoan.FlashParams[](
             3
-        );
-
-        console.log(
-            "Contract DAI balance before Flash Loan:",
-            ERC20(DAI).balanceOf(address(this))
-        );
-        console.log(
-            "Contract PEPE balance before Flash Loan:",
-            ERC20(PEPE).balanceOf(address(this))
-        );
-        console.log(
-            "Contract WETH balance before Flash Loan:",
-            ERC20(WETH9).balanceOf(address(this))
         );
 
         params[0] = IFlashLoan.FlashParams({
@@ -144,23 +131,36 @@ contract FlashLoanTest is Test {
             dex: address(dex2)
         });
 
-        flashLoan.initFlash(params);
-
-        console.log(
-            "Contract DAI balance after Flash Loan:",
-            ERC20(DAI).balanceOf(address(this))
-        );
-        console.log(
-            "Contract PEPE balance after Flash Loan:",
-            ERC20(PEPE).balanceOf(address(this))
-        );
-        console.log(
-            "Contract WETH balance after Flash Loan:",
-            ERC20(WETH9).balanceOf(address(this))
-        );
+        return params;
     }
 
-    function approveToken(address contractAddr, address token) internal {
-        ERC20(contractAddr).approve(token, 100 ether);
+    function message(bytes32 txProcess) private view {
+        if (txProcess == "FlashLoan") {
+            console.log(
+                "Contract DAI balance before Flash Loan:",
+                ERC20(DAI).balanceOf(address(this))
+            );
+            console.log(
+                "Contract PEPE balance before Flash Loan:",
+                ERC20(PEPE).balanceOf(address(this))
+            );
+            console.log(
+                "Contract WETH balance before Flash Loan:",
+                ERC20(WETH9).balanceOf(address(this))
+            );
+        } else {
+            console.log(
+                "Contract DAI balance after Flash Loan:",
+                ERC20(DAI).balanceOf(address(this))
+            );
+            console.log(
+                "Contract PEPE balance after Flash Loan:",
+                ERC20(PEPE).balanceOf(address(this))
+            );
+            console.log(
+                "Contract WETH balance after Flash Loan:",
+                ERC20(WETH9).balanceOf(address(this))
+            );
+        }
     }
 }
