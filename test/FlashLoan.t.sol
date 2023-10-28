@@ -68,7 +68,7 @@ contract FlashLoanTest is Test {
         vm.stopPrank();
     }
 
-    function test_Increment() public {
+    function testSingleFlashLoan() public {
         IFlashLoan.FlashParams[] memory params = new IFlashLoan.FlashParams[](
             1
         );
@@ -96,7 +96,7 @@ contract FlashLoanTest is Test {
         );
     }
 
-    function test_Increment2() public {
+    function testMultipleFlashLoan() public {
         IFlashLoan.FlashParams[] memory params = new IFlashLoan.FlashParams[](
             3
         );
