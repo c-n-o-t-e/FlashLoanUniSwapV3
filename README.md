@@ -1,66 +1,11 @@
-## Foundry
+## Uniswap V3 FlashLoan With a Buggy Dex
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+This repo contains flashloan gotten from UniSwap V3 that interacts with a buggy dex and takes tokens from the DEX.
 
-Foundry consists of:
+It also test cost for running multiple flashloan and single flashloan to ascertain which path is gas cheaper.
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+## Upon Cloning Run
 
-## Documentation
-
-https://book.getfoundry.sh/
-
-## Usage
-
-### Build
-
-```shell
-$ forge build
-```
-
-### Test
-
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+`forge install`
+`$FORK_URL=https://eth-mainnet.g.alchemy.com/v2/your-id`
+`forge test --fork-url $FORK_URL --mp test/FlashLoan.t.sol --gas-report --optimize --optimizer-runs 20000 -vv`
