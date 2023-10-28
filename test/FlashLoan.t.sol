@@ -70,13 +70,13 @@ contract FlashLoanTest is Test {
 
     function testSingleFlashLoan() public {
         IFlashLoan.FlashParams[] memory params = getParams();
-        message(bytes32("Before"));
+        message(bytes32("Before FlashLoan"));
 
         flashLoan.initFlash(params[0]);
         flashLoan.initFlash(params[1]);
         flashLoan.initFlash(params[2]);
 
-        message(bytes32("After"));
+        message(bytes32("After FlashLoan"));
     }
 
     function testMultipleFlashLoan() public {
@@ -84,7 +84,6 @@ contract FlashLoanTest is Test {
         message(bytes32("Before FlashLoan"));
 
         flashLoan.multipleFlash(params);
-
         message(bytes32("After FlashLoan"));
     }
 
@@ -135,7 +134,7 @@ contract FlashLoanTest is Test {
     }
 
     function message(bytes32 txProcess) private view {
-        if (txProcess == "FlashLoan") {
+        if (txProcess == "Before FlashLoan") {
             console.log(
                 "Contract DAI balance before Flash Loan:",
                 ERC20(DAI).balanceOf(address(this))
