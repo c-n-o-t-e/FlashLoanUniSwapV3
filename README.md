@@ -6,7 +6,7 @@ It also test cost for running multiple flashloan and single flashloan to ascerta
 
 ## Upon Cloning Run
 
-`cd lucia`
+`cd FlashLoanUniSwapV3`
 `forge install`
 `FORK_URL=https://eth-mainnet.g.alchemy.com/v2/your-id`
 `forge test --fork-url $FORK_URL --mp test/FlashLoan.t.sol --gas-report --optimize --optimizer-runs 20000 -vv`
